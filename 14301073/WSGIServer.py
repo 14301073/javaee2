@@ -1,33 +1,49 @@
-from __future__ import unicode_literals
+# coding=utf-8
+# Author:paukey
+# Date:2016-9-26
+# python 2.7
 
+"""
+测试以下功能:
+1 实现静态文件就如服务器开启之后在网址上输入localhost:8888/hello.html
+如果存在就显示文件内容，不存在就显示404Not found
+2动态资源输入网址localhost:8888/aaa  返回hello aaa
+"""
+
+from __future__ import unicode_literals
+import socket
+import StringIO
 import sys
 import datetime
 import os
-import socket
-import StringIO
 
-class WsgiServer(object):
+
+class WSGIServer(object):
     socket_family = socket.AF_INET
     socket_type = socket.SOCK_STREAM
     request_queue_size = 10
 
     def __init__(self, address):
+        # Create a listening socket
         self.socket = socket.socket(self.socket_family, self.socket_type)
+        # Allow to reuse the same address
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        # Bind
         self.socket.bind(address)
+        # Activate
         self.socket.listen(self.request_queue_size)
+        # Get server host name and port
         host, port = self.socket.getsockname()[:2]
         self.host = host
         self.port = port
 
-
-    def setApplication(self, application):
+    def set_App(self, application):
         self.application = application
 
     def beginServer(self):
-        print "开始监听..."
+        print "Begin listening..."
         while 1:
-            self.connection, client_address = self.socket.accept()
+            self.connection, address = self.socket.accept()
             self.sendRequest()
 
     def sendRequest(self):
@@ -35,7 +51,7 @@ class WsgiServer(object):
         self.request_lines = self.request_data.splitlines()
         try:
             self.getUrl()
-            env = self.getEnvironment()
+            env = self.getEnviron()
 
             print env['PATH_INFO'][1:]
 
@@ -49,8 +65,12 @@ class WsgiServer(object):
 
             app_data = self.application(env, self.startResponse)
             self.finishResponse(app_data)
-            print '[{0}] "{1}" {2}'.format(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                                           self.request_lines[0], self.status)
+            print '[{0}] "{1}" {2}'.format(datetime.datetime.now
+
+().strftime('%Y-%m-%d %H:%M:%S'),
+                                           self.request_lines[0], 
+
+self.status)
         except Exception, e:
             pass
 
@@ -59,9 +79,11 @@ class WsgiServer(object):
         for itm in self.request_lines[1:]:
             if ':' in itm:
                 self.request_dict[itm.split(':')[0]] = itm.split(':')[1]
-        self.request_method, self.path, self.request_version = self.request_dict.get('Path').split()
+        self.request_method, self.path, self.request_version = 
 
-    def getEnvironment(self):
+self.request_dict.get('Path').split()
+
+    def getEnviron(self):
         env = {
             'wsgi.version': (1, 0),
             'wsgi.url_scheme': 'http',
@@ -78,11 +100,12 @@ class WsgiServer(object):
         }
         return env
 
-
     def startResponse(self, status, response_headers):
         headers = [
-            ('Date', datetime.datetime.now().strftime('%a, %d %b %Y %H:%M:%S GMT')),
-            ('Server', 'RAPOWSGI0.1'),
+            ('Date', datetime.datetime.now().strftime('%a, %d %b %Y %H:%M:
+
+%S GMT')),
+            ('Server', 'WSGI'),
         ]
         self.headers = response_headers + headers
         self.status = status
@@ -99,8 +122,8 @@ class WsgiServer(object):
         finally:
             self.connection.close()
 
-def app1(environ, start_response):
 
+def app1(environ, start_response):
     filename = environ['PATH_INFO'][1:]
 
     if os.path.exists(filename):
@@ -121,8 +144,8 @@ def app1(environ, start_response):
         start_response(status, response_headers)
         return ['Can not find the file!']
 
-def app2(environ, start_response):
 
+def app2(environ, start_response):
     status = '200 OK'
     response_headers = [('Content-Type', 'text/plain')]
     start_response(status, response_headers)
@@ -131,12 +154,11 @@ def app2(environ, start_response):
 
 
 if __name__ == '__main__':
+    httpd = WSGIServer(('', int(8888)))
 
-    httpd = WsgiServer(('', int(8888)))
+    print "Web Server start..."
 
-    print "服务器已启动..."
-
-    module = 'WsgiServer'
+    module = 'WSGIServer'
     module = __import__(module)
 
-    httpd.beginServer()
+httpd.beginServer()
