@@ -1,15 +1,3 @@
-# coding=utf-8
-# Author:lucy
-# Date:2016-9-28
-# python 2.7
-
-"""
-测试以下功能:
-1 实现静态文件就如服务器开启之后在网址上输入localhost:8888/hello.html
-如果存在就显示文件内容，不存在就显示404Not found
-2动态资源输入网址localhost:8888/aaa  返回hello aaa
-"""
-
 from __future__ import unicode_literals
 import socket
 import StringIO
